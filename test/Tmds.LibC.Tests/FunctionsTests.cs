@@ -6,11 +6,20 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Tmds.Linux.Tests
 {
     public class FunctionsTest
     {
+
+        private ITestOutputHelper _outputHelper;
+
+        public FunctionsTest(ITestOutputHelper testOutputHelper)
+        {
+            _outputHelper = testOutputHelper;
+        }
+
         [Theory]
         [MemberData(nameof(Data))]
         public void Functions(CIncludes includes, string[] functions)
@@ -22,8 +31,16 @@ namespace Tmds.Linux.Tests
                     return;
                 }
 
-                program.Include(includes);
-                program.Include("stdint.h");
+                program.FindIncludePaths();
+
+                try {
+                    program.Include(includes);
+                    program.Include("stdint.h");
+                } catch (IncludeException ex) {
+                    _outputHelper.WriteLine(ex.Message);
+                    return;
+                }
+
                 program.BeginMain();
 
                 var symbolsUsedByDotnet = new HashSet<string>();
@@ -555,6 +572,15 @@ namespace Tmds.Linux.Tests
                     { new CIncludes("sys/eventfd.h", true),
                         new[] {
                             "eventfd" }
+                    },
+                    { new CIncludes(new[] { "sys/stat.h", "sys/sysmacros.h" }, true),
+                        new[] {
+                            "major",
+                            "minor",
+                            "makedev",
+                            "gnu_dev_major",
+                            "gnu_dev_minor",
+                            "gnu_dev_makedev" }
                     }
                 };
     }

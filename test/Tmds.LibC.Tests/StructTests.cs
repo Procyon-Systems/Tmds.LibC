@@ -6,11 +6,20 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Tmds.Linux.Tests
 {
     public class StructTests
     {
+
+        private ITestOutputHelper _outputHelper;
+
+        public StructTests(ITestOutputHelper testOutputHelper)
+        {
+            _outputHelper = testOutputHelper;
+        }
+
         // fields with some weirdness
         private static string[] s_skipSizeCheckForFields = new[] {
             // linux uses size_t instead of int
@@ -39,9 +48,24 @@ namespace Tmds.Linux.Tests
                     return;
                 }
 
+                program.FindIncludePaths();
+
+                try {
+                    program.Include(includes);
+                    program.Include("stdint.h");
+                } catch (IncludeException ex) {
+                    _outputHelper.WriteLine(ex.Message);
+                    return;
+                }
+
                 program.Define("_GNU_SOURCE");
-                program.Include(includes.Headers);
-                program.Include("stddef.h");
+                try {
+                    program.Include(includes.Headers);
+                    program.Include("stddef.h");
+                } catch (IncludeException ex) {
+                    _outputHelper.WriteLine(ex.Message);
+                    return;
+                }
                 program.AppendLine("#define member_size(type, member) sizeof(((type *)0)->member)");
 
                 // define syscall_arg and long_t

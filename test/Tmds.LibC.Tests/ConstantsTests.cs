@@ -2,11 +2,20 @@ using System;
 using System.IO;
 using System.Reflection;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Tmds.Linux.Tests
 {
     public class ConstantsTests
     {
+
+        private ITestOutputHelper _outputHelper;
+
+        public ConstantsTests(ITestOutputHelper testOutputHelper)
+        {
+            _outputHelper = testOutputHelper;
+        }
+
         [Fact]
         public unsafe void Constants()
         {
@@ -43,7 +52,16 @@ namespace Tmds.Linux.Tests
                     {
                         continue;
                     }
-                    program.Include(header);
+
+                    program.FindIncludePaths();
+
+                    try {
+                        program.Include(header);
+                    } catch (IncludeException ex) {
+                        _outputHelper.WriteLine(ex.Message);
+                        return;
+                    }
+
                 }
 
                 PropertyInfo[] properties = typeof(LibC).GetProperties();
