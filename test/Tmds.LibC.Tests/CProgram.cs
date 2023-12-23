@@ -8,6 +8,12 @@ using Tmds.Linux;
 
 namespace Tmds.Linux.Tests
 {
+
+    class IncludeException: Exception
+    {
+        public IncludeException(string msg): base(msg) {}
+    }
+
     class CProgram : IDisposable
     {
         private StringBuilder _program;
@@ -15,13 +21,80 @@ namespace Tmds.Linux.Tests
         private string _elfFile;
         private bool _hasMain;
 
+        private static List<string> s_searchPaths;
+
+        static CProgram() {
+            s_searchPaths = new List<string>();
+        }
+
         public CProgram()
         {
             _program = new StringBuilder();
         }
 
+        /// <summary>
+        /// Simple method to find and parse the compiler's system search paths.
+        /// </summary>
+        public void FindIncludePaths()
+        {
+            if (s_searchPaths.Count > 0) { return; }
+
+            using (var proc = Process.Start(new ProcessStartInfo {
+                Arguments = "-E -Wp,-v -",
+                FileName = "gcc",
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true
+            })) {
+                // Write empty message to gcc so it can continue
+                proc.StandardInput.WriteLine();
+                proc.StandardInput.Flush();
+
+                const string searchString = "#include <...> search starts here:";
+                const string endOfSearchString = "End of search list.";
+                // Now fetch GCC's output for parsing.
+                var hasFoundSysIncludes = false;
+
+                while (proc.StandardError.Peek() != -1) {
+                    var line = proc.StandardError.ReadLine();
+                    if (line is null) { break; }
+                    Console.WriteLine($"Got input from compiler: { line }");
+
+                    if (!hasFoundSysIncludes) {
+                        hasFoundSysIncludes = line.Equals(searchString, StringComparison.InvariantCultureIgnoreCase);
+                    } else {
+                        if (line.Equals(endOfSearchString, StringComparison.InvariantCultureIgnoreCase)) { break; }
+
+                        s_searchPaths.Add(line.Trim());
+                    }
+                }
+            }
+
+            s_searchPaths.ForEach(x => Console.WriteLine($"==========>> Found compiler search path { x }"));
+            if (s_searchPaths.Count == 0) { Console.Error.WriteLine("==========>> !! NO COMPILER SEARCH PATHS FOUND! !!"); }
+        }
+
         public void Include(string header)
         {
+            if (s_searchPaths is null || s_searchPaths.Count == 0) {
+                FindIncludePaths();
+            }
+
+            bool found = false;
+            foreach (var searchPath in s_searchPaths) {
+                if (File.Exists(Path.Combine(searchPath, header))) {
+                    found = true;
+                    Console.WriteLine($"=====> Found {header} in {searchPath}!");
+                    break;
+                } else {
+                    Console.WriteLine($"=====> Did NOT find {header} in {searchPath}!");
+                }
+            }
+
+            if (!found) {
+                throw new IncludeException($"The include header \"{ header }\" could not be found. This test won't run. Searched in { string.Join(',', s_searchPaths) }");
+            }
+
             _program.AppendLine($"#include <{header}>");
         }
 
@@ -29,7 +102,7 @@ namespace Tmds.Linux.Tests
         {
             foreach (var header in headers)
             {
-                _program.AppendLine($"#include <{header}>");
+                Include(header); // call Include to keep it DRY.
             }
         }
 
