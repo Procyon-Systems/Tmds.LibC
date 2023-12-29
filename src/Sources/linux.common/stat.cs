@@ -6,7 +6,10 @@ namespace Tmds.Linux
     public struct statx_timestamp {
         public long tv_sec;
         public uint tv_nsec;
+
+        #pragma warning disable CS0169
         private int __reserved;
+        #pragma warning restore CS0169
     }
 
     public unsafe struct statx {

@@ -16,8 +16,12 @@ namespace Tmds.Linux
         public tcflag_t c_lflag;
         public cc_t c_line;
         public fixed cc_t c_cc[NCCS];
+
+        #if TERMIOS_REPORT_SPEEDS
+        // These fields are not exposed by all libc implementations.
         private speed_t __c_ispeed;
         private speed_t __c_ospeed;
+        #endif // TERMIOS_REPORT_SPEEDS
     }
 
     public static unsafe partial class LibC

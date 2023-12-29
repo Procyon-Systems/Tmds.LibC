@@ -12,7 +12,11 @@ namespace Tmds.Linux
         public fsfilcnt_t f_ffree;
         public fsfilcnt_t f_favail;
         public ulong_t f_fsid;
+
+        #pragma warning disable CS0169
         private uint __padding;
+        #pragma warning restore CS0169
+
         public ulong_t f_flag;
         public ulong_t f_namemax;
         private unsafe fixed int __reserved[6];
