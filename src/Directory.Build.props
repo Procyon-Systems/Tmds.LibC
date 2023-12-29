@@ -12,6 +12,9 @@
     <Copyright>Tom Deseyn</Copyright>
     
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!-- Disable certain C# warnings which arise due to different naming schemes. -->
+    <NoWarn>8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

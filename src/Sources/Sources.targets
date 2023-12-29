@@ -9,6 +9,10 @@
     <Bitness Condition=" '$(Architecture)'=='arm64' ">64</Bitness>
     <Bitness Condition=" '$(Architecture)'=='arm32' ">32</Bitness>
     <Endianness>le</Endianness>
+    
+
+    <!-- Disable certain C# warnings which arise due to different naming schemes. -->
+    <NoWarn>8981</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
