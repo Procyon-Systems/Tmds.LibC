@@ -1,4 +1,4 @@
-[![Travis](https://api.travis-ci.org/tmds/Tmds.LibC.svg?branch=master)](https://travis-ci.org/tmds/Tmds.LibC)
+
 [![NuGet](https://img.shields.io/nuget/v/Tmds.LibC.svg)](https://www.nuget.org/packages/Tmds.LibC)
 # Tmds.LibC
 

@@ -1,12 +1,15 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
-using Tmds.Linux;
 
 namespace Tmds.Linux.Tests
 {
+    
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Text;
+    using Tmds.Linux;
+
+    using Xunit;
 
     class IncludeException: Exception
     {
