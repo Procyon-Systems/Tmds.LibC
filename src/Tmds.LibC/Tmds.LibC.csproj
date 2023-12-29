@@ -6,6 +6,9 @@
     <!-- use glibc x64 for ref compilation -->
     <CLibrary>glibc</CLibrary>
     <Architecture>x64</Architecture>
+
+    <!-- Disable certain C# warnings which arise due to different naming schemes. -->
+    <NoWarn>8981</NoWarn>
   </PropertyGroup>
 
   <Import Project="../Sources/Sources.targets" />
