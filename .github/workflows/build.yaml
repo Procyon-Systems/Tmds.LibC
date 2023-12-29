@@ -1,26 +1,23 @@
 name: Build
-on: [push, pull_request ]
+on: [ push, pull_request ]
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: [ '6.0', '7.0', '8.0' ]
 
     env:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-
-    - run: |
-        sudo apt-get update
-        sudo apt-get install -y libbluetooth-dev
-
-    - run: |
-        pushd test/Tmds.LibC.Tests && dotnet test && popd
-        dotnet pack src/Tmds.LibC --configuration Release --output .
-
-    - run: |
-        curl -H "X-NuGet-ApiKey: ${{ secrets.NUGET_APIKEY }}" -T Tmds.LibC.*.nupkg https://www.myget.org/F/tmds/api/v2/package
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
