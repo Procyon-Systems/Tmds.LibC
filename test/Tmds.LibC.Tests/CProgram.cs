@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Xunit;
 using Tmds.Linux;
 
 namespace Tmds.Linux.Tests
@@ -41,10 +40,11 @@ namespace Tmds.Linux.Tests
 
             using (var proc = Process.Start(new ProcessStartInfo {
                 Arguments = "-E -Wp,-v -",
-                FileName = "gcc",
+                FileName = "/usr/bin/gcc",
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                WorkingDirectory = "/"
             })) {
                 // Write empty message to gcc so it can continue
                 proc.StandardInput.WriteLine();
@@ -52,9 +52,9 @@ namespace Tmds.Linux.Tests
 
                 const string searchString = "#include <...> search starts here:";
                 const string endOfSearchString = "End of search list.";
+
                 // Now fetch GCC's output for parsing.
                 var hasFoundSysIncludes = false;
-
                 while (proc.StandardError.Peek() != -1) {
                     var line = proc.StandardError.ReadLine();
                     if (line is null) { break; }
